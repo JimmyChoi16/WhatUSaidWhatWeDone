@@ -54,13 +54,15 @@ import { computed } from 'vue';
 import { RouterLink } from 'vue-router';
 import TodoBoard from '../components/TodoBoard.vue';
 import { useTodos } from '../composables/useTodos';
+import type { Todo } from '../types';
 
 const { todos } = useTodos();
 const formatDate = (timestamp: number) => new Date(timestamp).toLocaleDateString();
 
 const lastUpdated = computed(() => {
-  if (!todos.length) return '—';
-  const latest = Math.max(...todos.map((todo: { createdAt: number }) => todo.createdAt));
+  const list = Array.isArray(todos.value) ? todos.value : [];
+  if (!list.length) return 'N/A';
+  const latest = Math.max(...list.map((todo: Todo) => todo.createdAt));
   return formatDate(latest);
 });
 </script>
