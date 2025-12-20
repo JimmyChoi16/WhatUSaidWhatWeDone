@@ -108,7 +108,7 @@ Edit `.env` with your MySQL settings.
 
 4) Verify MySQL is reachable
 ```bash
-mysql -h 127.0.0.1 -P 13306 -u root -p
+mysql -h 120.48.57.164 -P 3306 -u app -p
 ```
 
 5) Initialize database and tables
