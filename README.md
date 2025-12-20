@@ -139,8 +139,9 @@ npm run dev   # http://localhost:3000
 
 ---
 
-## Recommended Next Steps
+## Next Steps (For developer)
 
+- Integrate LLM model (ChatGPT / Gemini)
 - Add CRUD APIs (User, Auth, etc.)
 - Enable Flask-Migrate workflows
 - Add JWT authentication
