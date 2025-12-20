@@ -13,9 +13,11 @@ def create_app():
     CORS(app, resources={r"/api/*": {"origins": "*"}})
     # Avoid redirecting between /api/todos and /api/todos/ on preflight
     app.url_map.strict_slashes = False
-
+    
     db.init_app(app)
     migrate.init_app(app, db)
+    
+    from . import models
 
     register_routes(app)
     register_commands(app)
