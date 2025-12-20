@@ -53,7 +53,7 @@ The backend uses:
 - **Flask** - Web framework
 - **SQLAlchemy** - ORM
 - **Flask-Migrate** - Database migration support
-- **MySQL** - Running in Docker (host port `13306`)
+- **MySQL** - Running in Docker (host port `3306`)
 - **flask-cors** - CORS for frontend calls
 - **Poetry** - Dependency management + virtual environment
 
