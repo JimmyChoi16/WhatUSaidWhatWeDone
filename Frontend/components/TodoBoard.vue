@@ -167,8 +167,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { NewTodoInput, TodoStatus } from '../types';
+import { computed, ref, onMounted } from 'vue';
+import { NewTodoInput, TodoStatus, Todo } from '../types';
 import { useTodos } from '../composables/useTodos';
 
 const props = withDefaults(
@@ -191,12 +191,13 @@ const props = withDefaults(
 
 const isAdding = ref(false);
 const newTodo = ref<NewTodoInput>({ title: '', content: '', author: '' });
-const selected = ref<ReturnType<typeof useTodos>['todos'][number] | null>(null);
+const selected = ref<Todo | null>(null);
 
-const { todos, addTodo, toggleVote, isVoted } = useTodos();
+const { todos, addTodo, toggleVote, isVoted, fetchTodos } = useTodos();
 
 const displayTodos = computed(() => {
-  const sorted = [...todos].sort((a, b) => {
+  const list = Array.isArray(todos.value) ? todos.value : [];
+  const sorted = [...list].sort((a, b) => {
     if (b.heat !== a.heat) return b.heat - a.heat;
     return b.createdAt - a.createdAt;
   });
@@ -237,7 +238,7 @@ const toggleAdding = () => {
   isAdding.value = !isAdding.value;
 };
 
-const openDetail = (todo: ReturnType<typeof useTodos>['todos'][number]) => {
+const openDetail = (todo: Todo) => {
   if (!props.enableDetails) return;
   selected.value = todo;
 };
@@ -247,4 +248,8 @@ const closeDetail = () => {
 };
 
 const { title, subtitle, allowAdd } = props;
+
+onMounted(() => {
+  fetchTodos(true);
+});
 </script>
