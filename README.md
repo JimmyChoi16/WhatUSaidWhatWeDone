@@ -53,7 +53,7 @@ The backend uses:
 - **Flask** - Web framework
 - **SQLAlchemy** - ORM
 - **Flask-Migrate** - Database migration support
-- **MySQL** - Running in Docker (host port `3306`)
+- **MySQL** - Running in Cloud Service (host port `3306`)
 - **flask-cors** - CORS for frontend calls
 - **Poetry** - Dependency management + virtual environment
 
@@ -71,7 +71,7 @@ The backend uses:
 Make sure the following are installed on your machine / server:
 
 - Python **3.10+**
-- Docker (for MySQL)
+- Cloud Service (for MySQL)
 - Poetry (or install deps with pip)
 
 Install Poetry (once):
