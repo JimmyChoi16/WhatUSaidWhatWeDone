@@ -1,6 +1,7 @@
 <template>
   <div>
     <Hero />
+    <GeminiChat />
     <TodoBoard
       :limit="3"
       title="Top ideas"
@@ -13,5 +14,6 @@
 
 <script setup lang="ts">
 import Hero from '../components/Hero.vue';
+import GeminiChat from '../components/GeminiChat.vue';
 import TodoBoard from '../components/TodoBoard.vue';
 </script>
