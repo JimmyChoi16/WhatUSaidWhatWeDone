@@ -250,6 +250,7 @@ const closeDetail = () => {
 const { title, subtitle, allowAdd } = props;
 
 onMounted(() => {
-  fetchTodos(true);
+  // fetchTodos(true);
+  fetchTodos(false);
 });
 </script>
