@@ -71,7 +71,7 @@ The backend uses:
 Make sure the following are installed on your machine / server:
 
 - Python **3.10+**
-- Docker (for MySQL)
+- Cloud Service (for MySQL)
 - Poetry (or install deps with pip)
 
 Install Poetry (once):
