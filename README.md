@@ -53,7 +53,7 @@ The backend uses:
 - **Flask** - Web framework
 - **SQLAlchemy** - ORM
 - **Flask-Migrate** - Database migration support
-- **MySQL** - Running in Cloud Service (host port `3306`)
+- **MySQL** - Running in Docker (host port `3306`)
 - **flask-cors** - CORS for frontend calls
 - **Poetry** - Dependency management + virtual environment
 
@@ -108,7 +108,7 @@ Edit `.env` with your MySQL settings.
 
 4) Verify MySQL is reachable
 ```bash
-mysql -h 120.48.57.164 -P 3306 -u app -p
+mysql -h 127.0.0.1 -P 3306 -u root -p
 ```
 
 5) Initialize database and tables
