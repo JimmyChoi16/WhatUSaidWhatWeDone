@@ -21,7 +21,7 @@ WhatUSaidWhatWeDone/
   - app/
     - commands/         # Flask CLI commands (db_init)
     - models/           # SQLAlchemy ORM models
-    - routes/           # HTTP routes / APIs (health, todos)
+    - routes/           # HTTP routes / APIs (health, todos, chat)
     - config.py
     - extensions.py
     - __init__.py
@@ -56,6 +56,7 @@ The backend uses:
 - **MySQL** - Running in Docker (host port `3306`)
 - **flask-cors** - CORS for frontend calls
 - **Poetry** - Dependency management + virtual environment
+- **Gemini** - Basic text chat endpoint via `google-genai`
 
 ### API (current)
 - `GET /health` — health probe
@@ -63,6 +64,7 @@ The backend uses:
 - `POST /api/todos` — create todo (title, content, author; status optional Pending/In Progress/Completed).
 - `POST /api/todos/<id>/vote` — vote/unvote with body `{ "delta": 1 | -1 }` (heat clamped to >=0).
 - `PATCH /api/todos/<id>` — update status.
+- `POST /api/chat` — basic Gemini text chat with body `{ "prompt": "...", "model": "gemini-2.0-flash" }` (model optional).
 
 ---
 
@@ -122,12 +124,19 @@ poetry run python wsgi.py
 ```
 Server: `http://localhost:5000` (health check at `/health`)
 
+7) Add new dependency
+```bash
+poetry add XXXX
+```
+Then, redo step 6.
+
 ---
 
 ## Frontend
 
 Vue 3 + Vite SPA styled with Tailwind CDN (Apple-inspired UI).
 - Routes: `/` (Hero + top-3 hottest todos), `/board` (full board with add form, voting toggle, detail modal)
+- Home includes a basic Gemini chatbox for text prompts.
 - API base: set `VITE_API_BASE=http://localhost:5000` in `Frontend/.env.local` if different from default.
 
 Quickstart:
@@ -141,7 +150,7 @@ npm run dev   # http://localhost:3000
 
 ## Next Steps (For developer)
 
-- Integrate LLM model (ChatGPT / Gemini)
+- Expand AI capabilities (streaming, memory, safety)
 - Add CRUD APIs (User, Auth, etc.)
 - Enable Flask-Migrate workflows
 - Add JWT authentication
