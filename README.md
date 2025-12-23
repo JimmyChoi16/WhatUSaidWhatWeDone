@@ -130,6 +130,11 @@ poetry add XXXX
 ```
 Then, redo step 6.
 
+8) If need to update the DB
+```bash
+poetry run flask db upgrade
+```
+
 ---
 
 ## Frontend

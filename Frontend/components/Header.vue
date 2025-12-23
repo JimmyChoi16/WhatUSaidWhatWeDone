@@ -15,13 +15,35 @@
         </div>
       </div>
       <div class="flex items-center space-x-6">
-        <button class="bg-[#0071e3] text-white px-3 py-1 rounded-full text-[10px] font-semibold hover:bg-[#0077ed] transition-colors">
-          Share Idea
-        </button>
+        <RouterLink to="/board" class="text-[10px] font-semibold text-[#1d1d1f] hover:opacity-80 transition-opacity">
+          Board
+        </RouterLink>
+        <RouterLink
+          v-if="userInitial"
+          to="/auth"
+          class="w-8 h-8 rounded-full bg-gradient-to-br from-[#0071e3] to-[#00c6ff] text-white flex items-center justify-center text-[11px] font-semibold shadow-sm"
+          :title="userLabel"
+        >
+          {{ userInitial }}
+        </RouterLink>
+        <RouterLink
+          v-else
+          to="/auth"
+          class="bg-[#0071e3] text-white px-3 py-1 rounded-full text-[10px] font-semibold hover:bg-[#0077ed] transition-colors"
+        >
+          Sign In
+        </RouterLink>
       </div>
     </nav>
   </header>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+import { RouterLink } from 'vue-router';
+import { useAuth } from '../composables/useAuth';
+
+const { user } = useAuth();
+const userLabel = computed(() => user.value?.nickname || user.value?.email || '');
+const userInitial = computed(() => (userLabel.value ? userLabel.value[0].toUpperCase() : ''));
 </script>
