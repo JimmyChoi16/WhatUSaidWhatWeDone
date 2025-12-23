@@ -19,8 +19,14 @@
           Board
         </RouterLink>
         <RouterLink
+          to="/profile"
+          class="text-[10px] font-semibold text-[#1d1d1f] hover:opacity-80 transition-opacity"
+        >
+          Profile
+        </RouterLink>
+        <RouterLink
           v-if="userInitial"
-          to="/auth"
+          to="/profile"
           class="w-8 h-8 rounded-full bg-gradient-to-br from-[#0071e3] to-[#00c6ff] text-white flex items-center justify-center text-[11px] font-semibold shadow-sm"
           :title="userLabel"
         >
