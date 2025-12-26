@@ -1,4 +1,5 @@
 import hashlib
+import time
 import uuid
 from datetime import datetime, timedelta
 
@@ -21,13 +22,14 @@ def _hash_token(token: str) -> str:
 
 
 def _encode_token(user_id: int, token_type: str, expires_in: timedelta) -> str:
-    now = _now()
+    now_ts = int(time.time())
+    exp_ts = now_ts + int(expires_in.total_seconds())
     payload = {
         "sub": str(user_id),
         "type": token_type,
         "jti": uuid.uuid4().hex,
-        "iat": int(now.timestamp()),
-        "exp": int((now + expires_in).timestamp()),
+        "iat": now_ts,
+        "exp": exp_ts,
     }
     return jwt.encode(payload, current_app.config["JWT_SECRET"], algorithm=current_app.config["JWT_ALGORITHM"])
 
@@ -80,6 +82,25 @@ def _get_bearer_token():
     if not auth_header.startswith("Bearer "):
         return None
     return auth_header.split(" ", 1)[1].strip()
+
+
+def _require_access_user():
+    token = _get_bearer_token()
+    if not token:
+        return None, ("authorization required", 401)
+    try:
+        payload = _decode_token(token)
+    except jwt.ExpiredSignatureError:
+        return None, ("access token expired", 401)
+    except jwt.InvalidTokenError:
+        return None, ("invalid access token", 401)
+    if payload.get("type") != "access":
+        return None, ("invalid token type", 401)
+
+    user = User.query.get(int(payload.get("sub", 0)))
+    if not user or not user.is_active:
+        return None, ("account not available", 403)
+    return user, None
 
 
 @bp.post("/register")
@@ -197,20 +218,31 @@ def logout():
 
 @bp.get("/me")
 def me():
-    token = _get_bearer_token()
-    if not token:
-        return jsonify({"error": "authorization required"}), 401
-    try:
-        payload = _decode_token(token)
-    except jwt.ExpiredSignatureError:
-        return jsonify({"error": "access token expired"}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({"error": "invalid access token"}), 401
-    if payload.get("type") != "access":
-        return jsonify({"error": "invalid token type"}), 401
-
-    user = User.query.get(int(payload.get("sub", 0)))
-    if not user or not user.is_active:
-        return jsonify({"error": "account not available"}), 403
-
+    user, error = _require_access_user()
+    if error:
+        message, code = error
+        return jsonify({"error": message}), code
     return jsonify({"user": _serialize_user(user)})
+
+
+@bp.post("/password")
+def change_password():
+    user, error = _require_access_user()
+    if error:
+        message, code = error
+        return jsonify({"error": message}), code
+
+    data = request.get_json(silent=True) or {}
+    current_password = data.get("current_password") or ""
+    new_password = data.get("new_password") or ""
+
+    if not current_password or not new_password:
+        return jsonify({"error": "current_password and new_password are required"}), 400
+    if not user.check_password(current_password):
+        return jsonify({"error": "current password is incorrect"}), 401
+    if len(new_password) < 8:
+        return jsonify({"error": "password must be at least 8 characters"}), 400
+
+    user.set_password(new_password)
+    db.session.commit()
+    return jsonify({"ok": True})

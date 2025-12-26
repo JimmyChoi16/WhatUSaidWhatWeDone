@@ -4,22 +4,25 @@
       <div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-10 items-start">
         <div>
           <p class="text-[12px] uppercase tracking-[0.2em] text-[#86868b] font-semibold mb-3">Personal Center</p>
-          <h1 class="text-4xl md:text-5xl font-bold tracking-tight mb-4">Manage your ideas.</h1>
+          <h1 class="text-4xl md:text-5xl font-bold tracking-tight mb-4">Your profile.</h1>
           <p class="text-lg text-[#86868b] font-medium max-w-xl">
-            Every submission you post is tied to your account. Update status, refine details, or remove old ideas.
+            Keep your account details and security controls in one place.
           </p>
-          <div class="grid gap-4 mt-8">
-            <div class="glass-card rounded-2xl p-5 border border-white/30">
-              <p class="text-sm font-semibold mb-1">Total ideas</p>
-              <p class="text-2xl font-bold">{{ totalCount }}</p>
-            </div>
-            <div class="glass-card rounded-2xl p-5 border border-white/30">
-              <p class="text-sm font-semibold mb-1">In progress</p>
-              <p class="text-2xl font-bold">{{ inProgressCount }}</p>
-            </div>
-            <div class="glass-card rounded-2xl p-5 border border-white/30">
-              <p class="text-sm font-semibold mb-1">Completed</p>
-              <p class="text-2xl font-bold">{{ completedCount }}</p>
+          <div v-if="showIdeas && currentUser" class="mt-8">
+            <p class="text-xs uppercase tracking-[0.2em] text-[#86868b] font-semibold mb-3">Idea stats</p>
+            <div class="grid gap-4">
+              <div class="glass-card rounded-2xl p-5 border border-white/30">
+                <p class="text-sm font-semibold mb-1">Total ideas</p>
+                <p class="text-2xl font-bold">{{ totalCount }}</p>
+              </div>
+              <div class="glass-card rounded-2xl p-5 border border-white/30">
+                <p class="text-sm font-semibold mb-1">In progress</p>
+                <p class="text-2xl font-bold">{{ inProgressCount }}</p>
+              </div>
+              <div class="glass-card rounded-2xl p-5 border border-white/30">
+                <p class="text-sm font-semibold mb-1">Completed</p>
+                <p class="text-2xl font-bold">{{ completedCount }}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -44,6 +47,14 @@
               <button
                 type="button"
                 class="px-4 py-2 rounded-full text-xs font-semibold border border-gray-200 hover:bg-white transition"
+                @click="toggleIdeas"
+              >
+                {{ showIdeas ? 'Hide ideas' : 'Manage ideas' }}
+              </button>
+              <button
+                v-if="showIdeas"
+                type="button"
+                class="px-4 py-2 rounded-full text-xs font-semibold border border-gray-200 hover:bg-white transition"
                 @click="refreshTodos"
                 :disabled="isLoading"
               >
@@ -56,6 +67,19 @@
               >
                 Log out
               </button>
+            </div>
+            <div class="pt-4 border-t border-gray-200 space-y-3">
+              <p class="text-xs uppercase tracking-[0.2em] text-[#86868b]">Security</p>
+              <div class="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  class="px-4 py-2 rounded-full text-xs font-semibold bg-[#0071e3] text-white hover:bg-[#0077ed] transition"
+                  @click="openPasswordModal"
+                >
+                  Change password
+                </button>
+              </div>
+              <p class="text-xs text-[#86868b]">Update your password to keep your account secure.</p>
             </div>
           </div>
           <div v-else class="space-y-4">
@@ -73,7 +97,7 @@
       </div>
     </section>
 
-    <section class="py-12 px-4 max-w-6xl mx-auto">
+    <section v-if="showIdeas" class="py-12 px-4 max-w-6xl mx-auto">
       <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-6 gap-4">
         <div>
           <p class="text-sm uppercase text-[#86868b] tracking-[0.2em] mb-2">Your submissions</p>
@@ -192,6 +216,78 @@
         </div>
       </div>
     </section>
+
+    <div
+      v-if="showPasswordModal"
+      class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 px-4"
+      @click.self="closePasswordModal"
+    >
+      <div class="glass-card max-w-lg w-full rounded-3xl p-8 shadow-2xl">
+        <div class="flex items-start justify-between mb-6">
+          <div>
+            <p class="text-xs uppercase tracking-[0.2em] text-[#86868b]">Security</p>
+            <h3 class="text-2xl font-bold tracking-tight">Update password</h3>
+          </div>
+          <button
+            type="button"
+            class="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-200 hover:bg-gray-50 transition"
+            @click="closePasswordModal"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <form class="grid gap-4" @submit.prevent="submitPasswordChange">
+          <input
+            v-model="passwordForm.currentPassword"
+            type="password"
+            class="w-full bg-white/60 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#0071e3] focus:border-transparent transition-all outline-none text-sm"
+            placeholder="Current password"
+            autocomplete="current-password"
+            required
+          />
+          <input
+            v-model="passwordForm.newPassword"
+            type="password"
+            class="w-full bg-white/60 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#0071e3] focus:border-transparent transition-all outline-none text-sm"
+            placeholder="New password (min 8 chars)"
+            autocomplete="new-password"
+            required
+          />
+          <input
+            v-model="passwordForm.confirmPassword"
+            type="password"
+            class="w-full bg-white/60 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#0071e3] focus:border-transparent transition-all outline-none text-sm"
+            placeholder="Confirm new password"
+            autocomplete="new-password"
+            required
+          />
+          <div class="flex flex-wrap gap-3">
+            <button
+              type="submit"
+              class="px-4 py-2 rounded-full text-xs font-semibold bg-[#0071e3] text-white hover:bg-[#0077ed] transition disabled:opacity-60"
+              :disabled="isChangingPassword"
+            >
+              Update password
+            </button>
+            <button
+              type="button"
+              class="px-4 py-2 rounded-full text-xs font-semibold border border-gray-200 hover:bg-white transition"
+              @click="closePasswordModal"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+
+        <div class="mt-4 text-xs">
+          <p v-if="passwordError" class="text-red-500">{{ passwordError }}</p>
+          <p v-else-if="passwordSuccess" class="text-green-600">{{ passwordSuccess }}</p>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -202,7 +298,7 @@ import { useAuth } from '../composables/useAuth';
 import { useMyTodos } from '../composables/useMyTodos';
 import { Todo, TodoStatus } from '../types';
 
-const { user, logout } = useAuth();
+const { user, logout, changePassword } = useAuth();
 const { todos, isLoading, error, fetchMyTodos, updateTodo, deleteTodo } = useMyTodos();
 
 const currentUser = computed(() => user.value);
@@ -221,6 +317,16 @@ const editingId = ref<string | null>(null);
 const deletingId = ref<string | null>(null);
 const isSaving = ref(false);
 const actionError = ref<string | null>(null);
+const showIdeas = ref(false);
+const showPasswordModal = ref(false);
+const isChangingPassword = ref(false);
+const passwordError = ref<string | null>(null);
+const passwordSuccess = ref<string | null>(null);
+const passwordForm = reactive({
+  currentPassword: '',
+  newPassword: '',
+  confirmPassword: '',
+});
 const editForm = reactive({
   title: '',
   content: '',
@@ -250,6 +356,62 @@ const getStatusColor = (status: TodoStatus) => {
 
 const refreshTodos = async () => {
   await fetchMyTodos(true);
+};
+
+const toggleIdeas = async () => {
+  showIdeas.value = !showIdeas.value;
+  if (showIdeas.value && currentUser.value) {
+    await fetchMyTodos();
+  }
+};
+
+const openPasswordModal = () => {
+  passwordError.value = null;
+  passwordSuccess.value = null;
+  showPasswordModal.value = true;
+};
+
+const closePasswordModal = () => {
+  showPasswordModal.value = false;
+  isChangingPassword.value = false;
+  passwordError.value = null;
+  passwordSuccess.value = null;
+  passwordForm.currentPassword = '';
+  passwordForm.newPassword = '';
+  passwordForm.confirmPassword = '';
+};
+
+const submitPasswordChange = async () => {
+  if (!currentUser.value) return;
+  passwordError.value = null;
+  passwordSuccess.value = null;
+  const currentPassword = passwordForm.currentPassword.trim();
+  const newPassword = passwordForm.newPassword.trim();
+  const confirmPassword = passwordForm.confirmPassword.trim();
+  if (!currentPassword || !newPassword) {
+    passwordError.value = 'Please fill in your current and new password.';
+    return;
+  }
+  if (newPassword.length < 8) {
+    passwordError.value = 'New password must be at least 8 characters.';
+    return;
+  }
+  if (newPassword !== confirmPassword) {
+    passwordError.value = 'New passwords do not match.';
+    return;
+  }
+  isChangingPassword.value = true;
+  try {
+    await changePassword(currentPassword, newPassword);
+    passwordForm.currentPassword = '';
+    passwordForm.newPassword = '';
+    passwordForm.confirmPassword = '';
+    passwordSuccess.value = 'Password updated successfully.';
+  } catch (err: any) {
+    passwordError.value = err?.message || 'Failed to update password.';
+  } finally {
+    isChangingPassword.value = false;
+  }
 };
 
 const startEdit = (todo: Todo) => {
@@ -307,15 +469,17 @@ const handleLogout = async () => {
   await logout();
   editingId.value = null;
   todos.value = [];
+  showIdeas.value = false;
+  closePasswordModal();
 };
 
 watch(
   () => currentUser.value?.id,
-  async (nextId) => {
-    if (nextId) {
-      await fetchMyTodos(true);
-    } else {
+  (nextId) => {
+    if (!nextId) {
       todos.value = [];
+      showIdeas.value = false;
+      closePasswordModal();
     }
   },
   { immediate: true },

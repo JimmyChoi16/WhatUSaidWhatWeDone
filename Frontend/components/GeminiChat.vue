@@ -1,5 +1,5 @@
 <template>
-  <section id="chat" class="py-20 px-4">
+  <section v-if="!props.compact" id="chat" class="py-20 px-4">
     <div class="max-w-5xl mx-auto">
       <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-8">
         <div>
@@ -103,6 +103,94 @@
       </div>
     </div>
   </section>
+
+  <div v-else class="glass-card rounded-3xl p-6 md:p-8 shadow-2xl flex flex-col h-full overflow-hidden">
+    <div ref="scrollRef" class="flex flex-col space-y-4 flex-1 min-h-0 overflow-y-auto pr-2">
+      <div
+        v-if="!messages.length && !isLoading"
+        class="text-center text-[#86868b] text-sm py-10 border border-dashed border-gray-200 rounded-2xl bg-white/40"
+      >
+        Start by sharing your idea or ask for feedback on the roadmap.
+      </div>
+
+      <div
+        v-for="message in messages"
+        :key="message.id"
+        class="flex"
+        :class="message.role === 'user' ? 'justify-end' : 'justify-start'"
+      >
+        <div
+          class="max-w-[80%] rounded-2xl px-4 py-3 shadow-sm chat-bubble"
+          :class="message.role === 'user'
+            ? 'bg-[#1d1d1f] text-white chat-bubble--user'
+            : 'bg-white text-[#1d1d1f] border border-gray-200 chat-bubble--assistant'"
+        >
+          <p
+            class="text-[10px] uppercase tracking-[0.2em] mb-2"
+            :class="message.role === 'user' ? 'text-white/60' : 'text-[#86868b]'"
+          >
+            {{ message.role === 'user' ? 'You' : 'Gemini' }}
+          </p>
+          <div class="chat-markdown text-sm leading-relaxed" v-html="renderMarkdown(message.text)"></div>
+        </div>
+      </div>
+
+      <div v-if="isLoading" class="flex justify-start">
+        <div class="max-w-[80%] rounded-2xl px-4 py-3 bg-white/80 border border-gray-200 shadow-sm">
+          <div class="flex items-center space-x-2 text-xs text-[#86868b]">
+            <span class="w-2 h-2 rounded-full bg-[#0071e3] animate-pulse"></span>
+            <span>Gemini is thinking...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <form class="mt-6" @submit.prevent="handleSubmit">
+      <div class="flex items-end gap-3">
+        <div class="flex-1">
+          <textarea
+            v-model="input"
+            rows="2"
+            class="w-full bg-white/60 border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#0071e3] focus:border-transparent transition-all outline-none resize-none"
+            placeholder="Ask Gemini about your idea..."
+            @keydown.enter.exact.prevent="handleSubmit"
+          />
+        </div>
+        <button
+          type="submit"
+          class="bg-[#0071e3] text-white px-5 py-3 rounded-full text-sm font-semibold hover:bg-[#0077ed] transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+          :disabled="isLoading || !input.trim()"
+        >
+          Send
+        </button>
+      </div>
+      <div class="mt-3 flex flex-wrap items-center justify-end gap-3">
+        <label class="text-[11px] uppercase tracking-[0.2em] text-[#86868b] font-semibold">Model</label>
+        <div class="relative">
+          <select
+            v-model="selectedModel"
+            class="appearance-none bg-white/60 border border-gray-200 rounded-full px-4 py-2 pr-9 text-xs font-semibold text-[#1d1d1f] focus:ring-2 focus:ring-[#0071e3] focus:border-transparent transition-all outline-none"
+          >
+            <option value="gemini-3-pro-preview">gemini-3-pro-preview</option>
+            <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+            <option value="gemini-2.0-flash">gemini-2.0-flash (default)</option>
+          </select>
+          <svg
+            class="w-3 h-3 text-[#86868b] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path d="M5.5 7.5l4.5 4.5 4.5-4.5" />
+          </svg>
+        </div>
+      </div>
+      <div class="flex items-center justify-between text-[11px] text-[#86868b] mt-2">
+        <span v-if="error" class="text-red-500">{{ error }}</span>
+        <span v-else>Press Enter to send, Shift+Enter for a new line.</span>
+        <span class="uppercase tracking-[0.2em]">/api/chat</span>
+      </div>
+    </form>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -110,13 +198,22 @@ import DOMPurify from 'dompurify';
 import { marked } from 'marked';
 import { nextTick, ref, watch } from 'vue';
 
+const props = withDefaults(
+  defineProps<{
+    compact?: boolean;
+  }>(),
+  {
+    compact: false,
+  },
+);
+
 interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   text: string;
 }
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5050';
 
 marked.setOptions({ breaks: true });
 

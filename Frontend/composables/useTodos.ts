@@ -3,7 +3,7 @@ import { INITIAL_TODOS } from '../data/todos';
 import { NewTodoInput, Todo, TodoStatus } from '../types';
 import { useAuth } from './useAuth';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5050';
 
 const state = reactive<{ todos: Todo[] }>({
   todos: [],

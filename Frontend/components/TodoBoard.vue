@@ -43,41 +43,54 @@
 
     <div
       v-if="allowAdd && currentUser && isAdding"
-      class="mb-12 glass-card rounded-3xl p-8 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-500"
+      :class="showAi ? 'grid grid-cols-1 lg:grid-cols-2 gap-6 items-start' : ''"
     >
-      <form @submit.prevent="handleAddTodo" class="space-y-6">
-        <div class="flex items-center justify-between text-xs text-[#86868b]">
-          <span class="uppercase tracking-[0.2em]">Posting as</span>
-          <span class="font-semibold text-[#1d1d1f]">{{ authorName }}</span>
-        </div>
-        <div>
-          <label class="block text-sm font-semibold mb-2 text-[#1d1d1f]">Idea title</label>
-          <input
-            type="text"
-            v-model="newTodo.title"
-            class="w-full bg-white/50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#0071e3] focus:border-transparent transition-all outline-none"
-            placeholder="A short, clear title"
-            required
-          />
-        </div>
-        <div>
-          <label class="block text-sm font-semibold mb-2 text-[#1d1d1f]">What's your idea?</label>
-          <textarea
-            v-model="newTodo.content"
-            class="w-full bg-white/50 border border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-[#0071e3] focus:border-transparent transition-all outline-none text-lg min-h-[120px]"
-            placeholder="Describe your vision..."
-            required
-          />
-        </div>
-        <button
-          type="submit"
-          class="w-full bg-[#1d1d1f] text-white py-4 rounded-xl font-bold hover:bg-black transition-all disabled:opacity-60"
-          :disabled="isSubmitting"
-        >
-          Post to Stream
-        </button>
-        <p v-if="addError" class="text-sm text-red-500">{{ addError }}</p>
-      </form>
+      <div class="mb-12 glass-card rounded-3xl p-8 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-500">
+        <form @submit.prevent="handleAddTodo" class="space-y-6">
+          <div class="flex items-center justify-between text-xs text-[#86868b]">
+            <span class="uppercase tracking-[0.2em]">Posting as</span>
+            <span class="font-semibold text-[#1d1d1f]">{{ authorName }}</span>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-2 text-[#1d1d1f]">Idea title</label>
+            <input
+              type="text"
+              v-model="newTodo.title"
+              class="w-full bg-white/50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#0071e3] focus:border-transparent transition-all outline-none"
+              placeholder="A short, clear title"
+              required
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold mb-2 text-[#1d1d1f]">What's your idea?</label>
+            <textarea
+              v-model="newTodo.content"
+              class="w-full bg-white/50 border border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-[#0071e3] focus:border-transparent transition-all outline-none text-lg min-h-[120px]"
+              placeholder="Describe your vision..."
+              required
+            />
+          </div>
+          <div class="flex flex-col sm:flex-row gap-3">
+            <button
+              type="submit"
+              class="flex-1 bg-[#1d1d1f] text-white py-4 rounded-xl font-bold hover:bg-black transition-all disabled:opacity-60"
+              :disabled="isSubmitting"
+            >
+              Post to Stream
+            </button>
+            <button
+              type="button"
+              class="flex-1 border border-gray-200 text-[#1d1d1f] py-4 rounded-xl font-bold hover:bg-white transition-all"
+              @click="toggleAi"
+            >
+              {{ showAi ? 'Hide AI' : 'Ask AI' }}
+            </button>
+          </div>
+          <p v-if="addError" class="text-sm text-red-500">{{ addError }}</p>
+        </form>
+      </div>
+
+      <GeminiChat v-if="showAi" compact class="mb-12 h-[378.5px]" />
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -188,6 +201,7 @@ import { RouterLink } from 'vue-router';
 import { NewTodoInput, TodoStatus, Todo } from '../types';
 import { useTodos } from '../composables/useTodos';
 import { useAuth } from '../composables/useAuth';
+import GeminiChat from './GeminiChat.vue';
 
 const props = withDefaults(
   defineProps<{
@@ -208,6 +222,7 @@ const props = withDefaults(
 );
 
 const isAdding = ref(false);
+const showAi = ref(false);
 const newTodo = ref<NewTodoInput>({ title: '', content: '' });
 const selected = ref<Todo | null>(null);
 const addError = ref<string | null>(null);
@@ -254,6 +269,7 @@ const handleAddTodo = async () => {
     await addTodo(newTodo.value);
     newTodo.value = { title: '', content: '' };
     isAdding.value = false;
+    showAi.value = false;
   } catch (err: any) {
     addError.value = err?.message || 'Failed to create idea';
   } finally {
@@ -267,6 +283,13 @@ const handleVote = (id: string) => {
 
 const toggleAdding = () => {
   isAdding.value = !isAdding.value;
+  if (!isAdding.value) {
+    showAi.value = false;
+  }
+};
+
+const toggleAi = () => {
+  showAi.value = !showAi.value;
 };
 
 const openDetail = (todo: Todo) => {
@@ -281,7 +304,6 @@ const closeDetail = () => {
 const { title, subtitle, allowAdd } = props;
 
 onMounted(() => {
-  // fetchTodos(true);
-  fetchTodos(false);
+  fetchTodos(true);
 });
 </script>

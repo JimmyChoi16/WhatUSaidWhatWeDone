@@ -139,9 +139,11 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { useAuth } from '../composables/useAuth';
 
 const { user, refreshToken, initAuth, login, register, refreshSession, logout } = useAuth();
+const router = useRouter();
 
 const mode = ref<'login' | 'register'>('login');
 const isLoading = ref(false);
@@ -180,6 +182,7 @@ const handleSubmit = async () => {
       success.value = 'Signed in successfully.';
     }
     form.password = '';
+    await router.push('/');
   } catch (err: any) {
     error.value = err?.message || 'Request failed';
   } finally {

@@ -62,7 +62,12 @@ const formatDate = (timestamp: number) => new Date(timestamp).toLocaleDateString
 const lastUpdated = computed(() => {
   const list = Array.isArray(todos.value) ? todos.value : [];
   if (!list.length) return 'N/A';
-  const latest = Math.max(...list.map((todo: Todo) => todo.createdAt));
+
+  // Calculate the most recent createdAt or updatedAt timestamp
+  const createDate = Math.max(...list.map((todo: Todo) => todo.createdAt));
+  const updateDate = Math.max(...list.map((todo: Todo) => todo.updatedAt));
+  const latest = Math.max(createDate, updateDate);
+
   return formatDate(latest);
 });
 </script>

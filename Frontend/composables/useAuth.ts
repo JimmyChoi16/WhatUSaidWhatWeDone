@@ -8,7 +8,7 @@ interface AuthUser {
   last_login_at?: string | null;
 }
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5050';
 const ACCESS_KEY = 'auth.accessToken';
 const REFRESH_KEY = 'auth.refreshToken';
 
@@ -73,6 +73,24 @@ const refreshSession = async () => {
   return state.user;
 };
 
+const changePassword = async (currentPassword: string, newPassword: string) => {
+  if (!accessToken.value) {
+    throw new Error('Please sign in before changing your password.');
+  }
+  const res = await fetch(`${API_BASE}/api/auth/password`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken.value}`,
+    },
+    body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+  });
+  if (!res.ok) {
+    throw new Error(await parseError(res));
+  }
+  return true;
+};
+
 const initAuth = () => {
   if (initPromise) return initPromise;
   initPromise = (async () => {
@@ -135,5 +153,6 @@ export const useAuth = () => ({
   login,
   register,
   refreshSession,
+  changePassword,
   logout,
 });

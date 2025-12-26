@@ -1,7 +1,6 @@
 <template>
   <div>
     <Hero />
-    <GeminiChat />
     <TodoBoard
       :limit="3"
       title="Top ideas"
@@ -9,6 +8,7 @@
       :enable-details="false"
       :show-content="false"
     />
+    <GeminiChat />
   </div>
 </template>
 
