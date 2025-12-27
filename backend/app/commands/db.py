@@ -22,6 +22,6 @@ def register_db_commands(app):
             )
             conn.commit()
 
-        from ..models import User, Todo  # noqa
+        from ..models import User, Todo, RefreshToken  # noqa
         db.create_all()
         print(f"Database `{db_name}` initialized.")

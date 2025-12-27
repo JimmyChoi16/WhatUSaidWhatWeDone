@@ -1,8 +1,9 @@
 import { reactive, ref, toRef } from 'vue';
 import { INITIAL_TODOS } from '../data/todos';
 import { NewTodoInput, Todo, TodoStatus } from '../types';
+import { useAuth } from './useAuth';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5000';
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:5050';
 
 const state = reactive<{ todos: Todo[] }>({
   todos: [],
@@ -22,6 +23,8 @@ const mapTodo = (data: any): Todo => ({
   author: data.author ?? '',
   heat: Number.isFinite(Number(data.heat)) ? Number(data.heat) : 0,
   createdAt: data.created_at ? new Date(data.created_at).getTime() : Date.now(),
+  updatedAt: data.updated_at ? new Date(data.updated_at).getTime() : undefined,
+  userId: Number.isFinite(Number(data.user_id)) ? Number(data.user_id) : undefined,
 });
 
 const upsertTodo = (todo: Todo) => {
@@ -56,33 +59,39 @@ const fetchTodos = async (force = false) => {
   }
 };
 
+const parseError = async (res: Response) => {
+  try {
+    const data = await res.json();
+    if (data?.error) return data.error;
+  } catch {
+    // ignore parse errors
+  }
+  return `Request failed (${res.status})`;
+};
+
 const addTodo = async (input: NewTodoInput) => {
+  const { accessToken } = useAuth();
+  if (!accessToken.value) {
+    throw new Error('Please sign in before posting.');
+  }
   try {
     const res = await fetch(`${API_BASE}/api/todos`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken.value}`,
+      },
       body: JSON.stringify({
         title: input.title,
         content: input.content,
-        author: input.author,
         status: TodoStatus.PENDING,
       }),
     });
-    if (!res.ok) throw new Error('Failed to create todo');
+    if (!res.ok) throw new Error(await parseError(res));
     const data = await res.json();
     upsertTodo(mapTodo(data));
   } catch (err) {
-    // fallback optimistic insert
-    const todo: Todo = {
-      id: Math.random().toString(36).substr(2, 9),
-      title: input.title,
-      content: input.content,
-      status: TodoStatus.PENDING,
-      createdAt: Date.now(),
-      author: input.author,
-      heat: 0,
-    };
-    upsertTodo(todo);
+    throw err;
   }
 };
 

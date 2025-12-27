@@ -122,13 +122,18 @@ poetry run flask db_init
 ```bash
 poetry run python wsgi.py
 ```
-Server: `http://localhost:5000` (health check at `/health`)
+Server: `http://localhost:5050` (health check at `/health`)
 
 7) Add new dependency
 ```bash
 poetry add XXXX
 ```
 Then, redo step 6.
+
+8) If need to update the DB
+```bash
+poetry run flask db upgrade
+```
 
 ---
 
@@ -137,7 +142,7 @@ Then, redo step 6.
 Vue 3 + Vite SPA styled with Tailwind CDN (Apple-inspired UI).
 - Routes: `/` (Hero + top-3 hottest todos), `/board` (full board with add form, voting toggle, detail modal)
 - Home includes a basic Gemini chatbox for text prompts.
-- API base: set `VITE_API_BASE=http://localhost:5000` in `Frontend/.env.local` if different from default.
+- API base: set `VITE_API_BASE=http://localhost:5050` in `Frontend/.env.local` if different from default.
 
 Quickstart:
 ```bash
@@ -168,3 +173,5 @@ npm run dev   # http://localhost:3000
 MIT
 
 ---
+
+<!-- Test Github Only -->

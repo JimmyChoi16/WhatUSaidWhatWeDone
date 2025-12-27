@@ -11,12 +11,19 @@ export interface Todo {
   content: string;
   status: TodoStatus;
   createdAt: number;
+  updatedAt?: number;
   author: string;
   heat: number;
+  userId?: number;
 }
 
 export interface NewTodoInput {
   title: string;
   content: string;
-  author: string;
+}
+
+export interface TodoUpdateInput {
+  title?: string;
+  content?: string;
+  status?: TodoStatus;
 }

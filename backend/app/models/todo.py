@@ -6,6 +6,7 @@ class Todo(db.Model):
     __tablename__ = "todos"
 
     id = db.Column(db.BigInteger, primary_key=True)
+    user_id = db.Column(db.BigInteger, db.ForeignKey("user.id"), index=True)
     title = db.Column(db.String(255), nullable=False)
     content = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(32), nullable=False, default="Pending")
@@ -15,3 +16,4 @@ class Todo(db.Model):
     updated_at = db.Column(
         db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
     )
+    user = db.relationship("User", backref="todos")
