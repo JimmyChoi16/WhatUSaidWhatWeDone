@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Auth from './views/Auth.vue';
 import Board from './views/Board.vue';
 import Graph from './views/Graph.vue';
+import GraphCreate from './views/GraphCreate.vue';
 import Home from './views/Home.vue';
 import Profile from './views/Profile.vue';
 
@@ -32,6 +33,11 @@ const router = createRouter({
       path: '/graph',
       name: 'graph',
       component: Graph,
+    },
+    {
+      path: '/graph/create',
+      name: 'graph-create',
+      component: GraphCreate,
     },
     {
       path: '/:pathMatch(.*)*',
