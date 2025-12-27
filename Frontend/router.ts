@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Home from './views/Home.vue';
-import Board from './views/Board.vue';
 import Auth from './views/Auth.vue';
+import Board from './views/Board.vue';
+import Graph from './views/Graph.vue';
+import Home from './views/Home.vue';
 import Profile from './views/Profile.vue';
 
 const router = createRouter({
@@ -26,6 +27,11 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: Profile,
+    },
+    {
+      path: '/graph',
+      name: 'graph',
+      component: Graph,
     },
     {
       path: '/:pathMatch(.*)*',
