@@ -1,6 +1,6 @@
 import enum
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from ..extensions import db
 
 
@@ -9,6 +9,9 @@ class Visibility(enum.Enum):
     SHARED = "shared"
     PUBLIC = "public"
 
+
+def beijing_now():
+    return datetime.utcnow() + timedelta(hours=8)
 
 class Graph(db.Model):
     __tablename__ = "graphs"
@@ -22,9 +25,9 @@ class Graph(db.Model):
         nullable=False,
         default=Visibility.PRIVATE,
     )
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=beijing_now, nullable=False)
     updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+        db.DateTime, default=beijing_now, onupdate=beijing_now, nullable=False
     )
 
     owner = db.relationship("User", backref="graphs")

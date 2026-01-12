@@ -1,8 +1,10 @@
 import enum
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from ..extensions import db
 
+def beijing_now():
+    return datetime.utcnow() + timedelta(hours=8)
 
 class EdgeStatus(enum.Enum):
     ACTIVE = "active"
@@ -22,9 +24,9 @@ class Edge(db.Model):
     status = db.Column(db.Enum(EdgeStatus, name="edge_status_enum"))
     note = db.Column(db.Text)
     meta = db.Column(db.JSON)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    created_at = db.Column(db.DateTime, default=beijing_now, nullable=False)
     updated_at = db.Column(
-        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+        db.DateTime, default=beijing_now, onupdate=beijing_now, nullable=False
     )
 
     from_node = db.relationship("Node", foreign_keys=[from_node_id])
