@@ -29,6 +29,31 @@ def parse_node_type(raw_value: str) -> NodeType:
     raise GraphServiceError("node_type must be person, org, place, event, or custom")
 
 
+def _serialize_node(node: Node) -> dict:
+    layout = node.layout
+    position = None
+    style = {}
+    if layout:
+        position = {"x": layout.x, "y": layout.y}
+        if layout.style and isinstance(layout.style, dict):
+            style.update(layout.style)
+        if layout.width is not None:
+            style["width"] = layout.width
+        if layout.height is not None:
+            style["height"] = layout.height
+    return {
+        "id": node.id,
+        "title": node.title,
+        "node_type": node.node_type.value,
+        "graph_id": node.graph_id,
+        "avatar_url": node.avatar_url,
+        "summary": node.summary,
+        "data": node.data or {},
+        "position": position,
+        "style": style or None,
+    }
+
+
 def serialize_graph(graph: Graph, nodes: list[Node], edges: list[Edge]) -> dict:
     return {
         "graph": {
@@ -39,15 +64,7 @@ def serialize_graph(graph: Graph, nodes: list[Node], edges: list[Edge]) -> dict:
             "created_at": graph.created_at.isoformat(),
             "updated_at": graph.updated_at.isoformat(),
         },
-        "nodes": [
-            {
-                "id": node.id,
-                "title": node.title,
-                "node_type": node.node_type.value,
-                "graph_id": node.graph_id,
-            }
-            for node in nodes
-        ],
+        "nodes": [_serialize_node(node) for node in nodes],
         "edges": [
             {
                 "id": edge.id,
@@ -55,6 +72,7 @@ def serialize_graph(graph: Graph, nodes: list[Node], edges: list[Edge]) -> dict:
                 "target": edge.to_node_id,
                 "label": edge.label,
                 "type": (edge.meta or {}).get("type"),
+                "style": (edge.meta or {}).get("style"),
             }
             for edge in edges
         ],

@@ -1,6 +1,7 @@
 from flask import Blueprint, abort, current_app, jsonify, request
 import jwt
-from ..models import User
+from sqlalchemy import desc
+from ..models import Edge, Graph, Node, User
 from ..service.graphs import (
     GraphServiceError,
     create_graph as create_graph_service,
@@ -55,3 +56,40 @@ def create_graph():
     except GraphServiceError as exc:
         abort(exc.status_code, description=exc.message)
     return jsonify(serialize_graph(graph, created_nodes, created_edges)), 201
+
+
+@bp.get("/mine")
+def list_my_graphs():
+    user = _require_user()
+    graphs = (
+        Graph.query.filter_by(owner_user_id=user.id)
+        .order_by(desc(Graph.updated_at))
+        .all()
+    )
+    payload = [
+        {
+            "id": graph.id,
+            "name": graph.name,
+            "visibility": graph.visibility.value,
+            "created_at": graph.created_at.isoformat(),
+            "updated_at": graph.updated_at.isoformat(),
+        }
+        for graph in graphs
+    ]
+    return jsonify(payload)
+
+
+@bp.get("/<graph_id>")
+def get_graph(graph_id: str):
+    user = _require_user()
+    graph = Graph.query.filter_by(id=graph_id, owner_user_id=user.id).first()
+    if not graph:
+        abort(404, description="graph not found")
+
+    nodes = Node.query.filter_by(graph_id=graph.id).all()
+    edges = (
+        Edge.query.join(Node, Edge.from_node_id == Node.id)
+        .filter(Node.graph_id == graph.id)
+        .all()
+    )
+    return jsonify(serialize_graph(graph, nodes, edges))
