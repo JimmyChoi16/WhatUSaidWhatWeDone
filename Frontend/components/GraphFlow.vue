@@ -14,11 +14,29 @@
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
           "
         >
-          <img
-            :src="data.avatarUrl"
-            alt="avatar"
-            style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;"
-          />
+          <div
+            style="
+              width: 28px;
+              height: 28px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              overflow: hidden;
+              background: #e2e8f0;
+              color: #0f172a;
+              font-size: 12px;
+              font-weight: 600;
+            "
+          >
+            <img
+              v-if="data.avatarUrl"
+              :src="data.avatarUrl"
+              alt="avatar"
+              style="width: 100%; height: 100%; object-fit: cover;"
+            />
+            <span v-else>{{ data.initial }}</span>
+          </div>
           <span style="font-size: 13px; color: #111827;">{{ data.name }}</span>
         </div>
       </template>
@@ -36,7 +54,7 @@ export type GraphNode = {
   x: number;
   y: number;
   name: string;
-  avatarUrl: string;
+  avatarUrl?: string;
 };
 
 export type GraphEdge = {
@@ -57,6 +75,7 @@ const flowNodes = computed<Node[]>(() =>
     data: {
       name: node.name,
       avatarUrl: node.avatarUrl,
+      initial: node.name.trim().charAt(0).toUpperCase() || '?',
     },
   }))
 );

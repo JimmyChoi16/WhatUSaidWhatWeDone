@@ -11,7 +11,7 @@
           <a href="#" class="opacity-60 hover:opacity-100 transition-opacity">Explore</a>
           <a href="#" class="opacity-60 hover:opacity-100 transition-opacity">Ideas</a>
           <a href="#" class="opacity-60 hover:opacity-100 transition-opacity">Roadmap</a>
-          <RouterLink to="/graph" class="opacity-60 hover:opacity-100 transition-opacity">Graph Demo</RouterLink>
+          <RouterLink to="/graph" class="opacity-60 hover:opacity-100 transition-opacity">My Graphs</RouterLink>
           <RouterLink to="/graph/create" class="opacity-60 hover:opacity-100 transition-opacity">Create Graph</RouterLink>
           <a href="#" class="opacity-60 hover:opacity-100 transition-opacity">Community</a>
         </div>
